@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>租赁信息录入系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .table-auto th, .table-auto td { padding: 0.75rem; border: 1px solid #e2e8f0; text-align: left; white-space: nowrap; }
+        .period-item { border-top: 1px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem; }
+        .period-section { border: 1px solid #d1d5db; border-radius: 0.5rem; padding: 1.5rem; margin-top: 1.5rem; }
+        .nav-tab { cursor: pointer; padding: 0.75rem 1.5rem; border-bottom: 2px solid transparent; }
+        .nav-tab.active { border-color: #4f46e5; color: #4f46e5; font-weight: 600; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">租赁信息录入系统</h1>
+            <p class="text-gray-600 mt-2">一个用于管理租赁合同信息的简单工具。</p>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="mb-8 border-b border-gray-200">
+            <nav class="flex -mb-px">
+                <a id="nav-entry" class="nav-tab active">数据录入</a>
+                <a id="nav-overview" class="nav-tab">信息总览</a>
+                <a id="nav-edit" class="nav-tab">检索与修改</a>
+            </nav>
+        </div>
+
+        <!-- View Container -->
+        <div>
+            <!-- Data Entry View -->
+            <div id="view-entry">
+                <div class="max-w-5xl mx-auto bg-white p-8 rounded-xl shadow-md">
+                    <form id="rental-form">
+                        <h2 class="text-2xl font-semibold mb-6">新增合同信息</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div><label for="unit-number" class="block text-sm font-medium text-gray-700">单元号</label><input type="text" id="unit-number" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></div>
+                            <div><label for="company-name" class="block text-sm font-medium text-gray-700">公司名称</label><input type="text" id="company-name" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></div>
+                            <div><label for="rented-area" class="block text-sm font-medium text-gray-700">租住面积 (㎡)</label><input type="number" step="0.01" id="rented-area" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></div>
+                            <div><label for="payment-start-day" class="block text-sm font-medium text-gray-700">缴费区间头 (日)</label><input type="number" id="payment-start-day" min="1" max="31" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></div>
+                            <div><label for="payment-end-day" class="block text-sm font-medium text-gray-700">缴费区间尾 (日)</label><input type="number" id="payment-end-day" min="1" max="31" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></div>
+                        </div>
+                        <div class="period-section">
+                            <h3 class="text-xl font-semibold mb-4">租金区间</h3><div id="rent-periods-container"></div>
+                            <div class="mt-4"><button type="button" class="add-period-btn" data-type="rent" data-container="rent-periods-container">+ 添加租金区间</button></div>
+                        </div>
+                        <div class="period-section">
+                            <h3 class="text-xl font-semibold mb-4">物业费区间</h3><div id="property-fee-periods-container"></div>
+                            <div class="mt-4"><button type="button" class="add-period-btn" data-type="property" data-container="property-fee-periods-container">+ 添加物业费区间</button></div>
+                        </div>
+                        <div class="period-section">
+                            <h3 class="text-xl font-semibold mb-4">免租区间</h3><div id="rent-free-periods-container"></div>
+                            <div class="mt-4"><button type="button" class="add-period-btn" data-type="free" data-container="rent-free-periods-container">+ 添加免租区间</button></div>
+                        </div>
+                        <div class="mt-8 text-right"><button type="submit" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">保存合同</button></div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Information Overview View -->
+            <div id="view-overview" class="hidden">
+                 <div class="max-w-7xl mx-auto bg-white p-8 rounded-xl shadow-md">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-semibold">信息总览</h2>
+                        <button id="export-btn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            导出为 Excel (CSV)
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table id="rental-table" class="w-full table-auto border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th>单元号</th>
+                                    <th>公司名称</th>
+                                    <th>缴费日(起/止)</th>
+                                    <th>租金区间</th>
+                                    <th>期间租金(元/月)</th>
+                                    <th>物业费区间</th>
+                                    <th>期间物业费(元/月)</th>
+                                    <th>免租期</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rental-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit View -->
+            <div id="view-edit" class="hidden">
+                <div class="max-w-5xl mx-auto bg-white p-8 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-semibold mb-6">检索并修改合同</h2>
+                    <div class="flex gap-4"><input type="text" id="search-company-name" placeholder="输入公司名称进行模糊检索..." class="flex-grow block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"><button id="search-btn" class="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">检索</button></div>
+                    <div id="search-results-container" class="mt-6"></div>
+                </div>
+                <div id="edit-form-container" class="max-w-5xl mx-auto bg-white p-8 rounded-xl shadow-md mt-8 hidden">
+                    <form id="edit-rental-form">
+                        <input type="hidden" id="edit-doc-id">
+                        <h2 class="text-2xl font-semibold mb-6">修改合同信息</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div><label for="edit-unit-number" class="block text-sm font-medium text-gray-700">单元号</label><input type="text" id="edit-unit-number" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></div>
+                            <div><label for="edit-company-name" class="block text-sm font-medium text-gray-700">公司名称</label><input type="text" id="edit-company-name" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></div>
+                            <div><label for="edit-rented-area" class="block text-sm font-medium text-gray-700">租住面积 (㎡)</label><input type="number" step="0.01" id="edit-rented-area" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></div>
+                            <div><label for="edit-payment-start-day" class="block text-sm font-medium text-gray-700">缴费区间头 (日)</label><input type="number" id="edit-payment-start-day" min="1" max="31" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></div>
+                            <div><label for="edit-payment-end-day" class="block text-sm font-medium text-gray-700">缴费区间尾 (日)</label><input type="number" id="edit-payment-end-day" min="1" max="31" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></div>
+                        </div>
+                        <div class="period-section"><h3 class="text-xl font-semibold mb-4">租金区间</h3><div id="edit-rent-periods-container"></div><div class="mt-4"><button type="button" class="add-period-btn" data-type="rent" data-container="edit-rent-periods-container">+ 添加租金区间</button></div></div>
+                        <div class="period-section"><h3 class="text-xl font-semibold mb-4">物业费区间</h3><div id="edit-property-fee-periods-container"></div><div class="mt-4"><button type="button" class="add-period-btn" data-type="property" data-container="edit-property-fee-periods-container">+ 添加物业费区间</button></div></div>
+                        <div class="period-section"><h3 class="text-xl font-semibold mb-4">免租区间</h3><div id="edit-rent-free-periods-container"></div><div class="mt-4"><button type="button" class="add-period-btn" data-type="free" data-container="edit-rent-free-periods-container">+ 添加免租区间</button></div></div>
+                        <div class="mt-8 text-right"><button type="submit" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">保存更改</button><button type="button" id="cancel-edit-btn" class="ml-4 inline-flex justify-center py-2 px-6 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">取消</button></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <footer class="text-center mt-12 text-sm text-gray-500"><p>由 编码助手 生成</p></footer>
+    </div>
+
+    <script>
+        // --- Configuration ---
+        const API_BASE_URL = 'http://localhost:3001/api';
+
+        // --- State ---
+        let allContracts = []; // Local cache for all contracts
+
+        // --- DOM Elements ---
+        const views = {
+            entry: document.getElementById('view-entry'),
+            overview: document.getElementById('view-overview'),
+            edit: document.getElementById('view-edit'),
+        };
+        const navs = {
+            entry: document.getElementById('nav-entry'),
+            overview: document.getElementById('nav-overview'),
+            edit: document.getElementById('nav-edit'),
+        };
+        const searchBtn = document.getElementById('search-btn');
+        const searchResultsContainer = document.getElementById('search-results-container');
+        const editFormContainer = document.getElementById('edit-form-container');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const entryForm = document.getElementById('rental-form');
+        const editForm = document.getElementById('edit-rental-form');
+        const tableBody = document.getElementById('rental-table-body');
+        const exportBtn = document.getElementById('export-btn');
+        
+        // --- API Service ---
+        const api = {
+            get: (endpoint) => fetch(`${API_BASE_URL}${endpoint}`).then(res => res.ok ? res.json() : Promise.reject(res)),
+            post: (endpoint, body) => fetch(`${API_BASE_URL}${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(res => res.ok ? res.json() : Promise.reject(res)),
+            put: (endpoint, body) => fetch(`${API_BASE_URL}${endpoint}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(res => res.ok ? res.json() : Promise.reject(res)),
+            delete: (endpoint) => fetch(`${API_BASE_URL}${endpoint}`, { method: 'DELETE' }),
+        };
+
+        // --- View & Navigation Logic ---
+        function showView(viewToShow) {
+            Object.keys(views).forEach(key => {
+                views[key].classList.toggle('hidden', key !== viewToShow);
+                navs[key].classList.toggle('active', key === viewToShow);
+            });
+            if (viewToShow === 'overview') {
+                fetchAndRenderRentals();
+            }
+        }
+        Object.keys(navs).forEach(key => navs[key].addEventListener('click', () => showView(key)));
+
+        // --- Dynamic Form Field Logic ---
+        function createPeriodFields(type, values = {}) {
+            const container = document.createElement('div');
+            container.className = 'grid grid-cols-1 md:grid-cols-4 gap-4 items-end period-item';
+            let html = '';
+            if (type === 'rent') {
+                html = `<div class="md:col-span-2"><label>租金区间</label><div class="flex items-center mt-1"><input type="date" required class="rent-start-date" value="${values.startDate || ''}"> <span class="mx-2">-</span> <input type="date" required class="rent-end-date" value="${values.endDate || ''}"></div></div><div><label>期间租金(元/月)</label><input type="number" step="0.01" required class="rent-amount" value="${values.amount || ''}"></div>`;
+            } else if (type === 'property') {
+                html = `<div class="md:col-span-2"><label>物业费区间</label><div class="flex items-center mt-1"><input type="date" required class="prop-start-date" value="${values.startDate || ''}"> <span class="mx-2">-</span> <input type="date" required class="prop-end-date" value="${values.endDate || ''}"></div></div><div><label>期间物业费(元/月)</label><input type="number" step="0.01" required class="prop-amount" value="${values.amount || ''}"></div>`;
+            } else if (type === 'free') {
+                html = `<div class="md:col-span-3"><label>免租区间</label><div class="flex items-center mt-1"><input type="date" required class="free-start-date" value="${values.startDate || ''}"> <span class="mx-2">-</span> <input type="date" required class="free-end-date" value="${values.endDate || ''}"></div></div>`;
+            }
+            html += `<div><button type="button" class="remove-period-btn text-red-600 hover:text-red-800 text-sm font-medium">删除</button></div>`;
+            container.innerHTML = html;
+            container.querySelectorAll('label').forEach(el => el.className = 'block text-sm font-medium text-gray-700');
+            container.querySelectorAll('input').forEach(el => el.className += ' mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500');
+            return container;
+        }
+
+        document.querySelectorAll('.add-period-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const type = e.target.dataset.type;
+                const containerId = e.target.dataset.container;
+                document.getElementById(containerId).appendChild(createPeriodFields(type));
+            });
+        });
+        
+        document.body.addEventListener('click', e => {
+            if (e.target.classList.contains('remove-period-btn')) {
+                e.target.closest('.period-item').remove();
+            }
+        });
+
+        const collectPeriods = (container, selectors) => {
+            const periods = [];
+            const items = container.querySelectorAll('.period-item');
+            for (const item of items) {
+                const period = {};
+                let isValid = true;
+                for (const key in selectors) {
+                    const input = item.querySelector(selectors[key]);
+                    if (input && input.value) { period[key] = input.value; } else { isValid = false; break; }
+                }
+                if (isValid) periods.push(period); else return null;
+            }
+            return periods;
+        };
+        
+        // --- Data Rendering Logic (REVISED & FIXED) ---
+        function findOverlappingPeriod(targetPeriod, periods = []) {
+            if (!targetPeriod || !targetPeriod.startDate || !targetPeriod.endDate || !Array.isArray(periods)) {
+                return null;
+            }
+            
+            const targetStart = new Date(targetPeriod.startDate);
+            const targetEnd = new Date(targetPeriod.endDate);
+
+            for (const period of periods) {
+                const periodStart = new Date(period.startDate);
+                const periodEnd = new Date(period.endDate);
+
+                // Check for overlap: (StartA <= EndB) and (StartB <= EndA)
+                if (targetStart <= periodEnd && periodStart <= targetEnd) {
+                    return period; // Return the first overlapping period found
+                }
+            }
+            return null;
+        }
+
+        function renderTable(contracts) {
+            tableBody.innerHTML = '';
+            contracts.forEach(contract => {
+                if (!contract.rentPeriods || contract.rentPeriods.length === 0) {
+                    const row = document.createElement('tr');
+                    const allRentFreePeriods = (contract.rentFreePeriods || []).map(p => `${p.startDate}至${p.endDate}`).join('; ') || '无';
+                    row.innerHTML = `
+                        <td>${contract.unitNumber}</td>
+                        <td>${contract.companyName}</td>
+                        <td>${contract.paymentStartDay}日 / ${contract.paymentEndDay}日</td>
+                        <td>无租金信息</td>
+                        <td>N/A</td>
+                        <td>N/A</td>
+                        <td>N/A</td>
+                        <td>${allRentFreePeriods}</td>
+                        <td class="space-x-4">
+                            <button data-id="${contract.id}" class="modify-btn text-indigo-600 hover:text-indigo-800 font-semibold">修改</button>
+                            <button data-id="${contract.id}" class="delete-btn text-red-600 hover:text-red-800 font-semibold">删除</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                    return;
+                }
+
+                contract.rentPeriods.forEach(rentPeriod => {
+                    const activePropFeePeriod = findOverlappingPeriod(rentPeriod, contract.propertyFeePeriods);
+                    const allRentFreePeriods = (contract.rentFreePeriods || []).map(p => `${p.startDate}至${p.endDate}`).join('; ') || '无';
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${contract.unitNumber}</td>
+                        <td>${contract.companyName}</td>
+                        <td>${contract.paymentStartDay}日 / ${contract.paymentEndDay}日</td>
+                        <td>${rentPeriod.startDate} 至 ${rentPeriod.endDate}</td>
+                        <td>${rentPeriod.amount}</td>
+                        <td>${activePropFeePeriod ? `${activePropFeePeriod.startDate} 至 ${activePropFeePeriod.endDate}` : 'N/A'}</td>
+                        <td>${activePropFeePeriod ? activePropFeePeriod.amount : 'N/A'}</td>
+                        <td>${allRentFreePeriods}</td>
+                        <td class="space-x-4">
+                            <button data-id="${contract.id}" class="modify-btn text-indigo-600 hover:text-indigo-800 font-semibold">修改</button>
+                            <button data-id="${contract.id}" class="delete-btn text-red-600 hover:text-red-800 font-semibold">删除</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            });
+        }
+
+        async function fetchAndRenderRentals() {
+            try {
+                const contracts = await api.get('/contracts');
+                allContracts = contracts; 
+                renderTable(contracts);
+            } catch (error) {
+                console.error("Failed to fetch contracts:", error);
+                alert('无法从后端获取数据。请确保后端服务已启动。');
+            }
+        }
+        
+        // --- CRUD Logic ---
+        async function handleSaveContract(formId) {
+            const formPrefix = formId === 'rental-form' ? '' : 'edit-';
+            const contractData = {
+                unitNumber: document.getElementById(`${formPrefix}unit-number`).value,
+                companyName: document.getElementById(`${formPrefix}company-name`).value,
+                rentedArea: document.getElementById(`${formPrefix}rented-area`).value,
+                paymentStartDay: document.getElementById(`${formPrefix}payment-start-day`).value,
+                paymentEndDay: document.getElementById(`${formPrefix}payment-end-day`).value,
+                rentPeriods: collectPeriods(document.getElementById(`${formPrefix}rent-periods-container`), { startDate: '.rent-start-date', endDate: '.rent-end-date', amount: '.rent-amount' }),
+                propertyFeePeriods: collectPeriods(document.getElementById(`${formPrefix}property-fee-periods-container`), { startDate: '.prop-start-date', endDate: '.prop-end-date', amount: '.prop-amount' }),
+                rentFreePeriods: collectPeriods(document.getElementById(`${formPrefix}rent-free-periods-container`), { startDate: '.free-start-date', endDate: '.free-end-date' }),
+            };
+            
+            if (!contractData.rentPeriods) { alert('请填写所有租金区间的必填项。'); return null; }
+            if (contractData.rentPeriods.length === 0) { alert('请至少添加一个租金区间。'); return null; }
+            
+            return contractData;
+        }
+
+        entryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newContract = await handleSaveContract('rental-form');
+            if (newContract) {
+                try {
+                    await api.post('/contracts', newContract);
+                    alert('合同保存成功！');
+                    entryForm.reset();
+                    ['rent-periods-container', 'property-fee-periods-container', 'rent-free-periods-container'].forEach(id => document.getElementById(id).innerHTML = '');
+                    document.getElementById('rent-periods-container').appendChild(createPeriodFields('rent'));
+                    document.getElementById('property-fee-periods-container').appendChild(createPeriodFields('property'));
+                } catch (error) { console.error("Failed to save contract:", error); alert('保存失败。'); }
+            }
+        });
+
+        editForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const docId = document.getElementById('edit-doc-id').value;
+            const updatedContract = await handleSaveContract('edit-rental-form');
+            if (updatedContract) {
+                try {
+                    await api.put(`/contracts/${docId}`, updatedContract);
+                    alert('合同更新成功！');
+                    editFormContainer.classList.add('hidden');
+                    searchResultsContainer.innerHTML = '';
+                    document.getElementById('search-company-name').value = '';
+                } catch (error) { console.error("Update failed:", error); alert('更新失败。'); }
+            }
+        });
+
+        tableBody.addEventListener('click', async (e) => {
+            const target = e.target;
+            if (target.classList.contains('delete-btn')) {
+                const docId = target.dataset.id;
+                if (window.confirm(`您确定要删除这份合同及其所有记录吗？`)) {
+                    try {
+                        await api.delete(`/contracts/${docId}`);
+                        fetchAndRenderRentals();
+                    } catch (error) { console.error("Failed to delete contract:", error); alert('删除失败。'); }
+                }
+            }
+            if (target.classList.contains('modify-btn')) {
+                const docId = target.dataset.id;
+                const contractToEdit = allContracts.find(c => c.id == docId);
+                if (contractToEdit) {
+                    populateEditForm(contractToEdit);
+                    showView('edit');
+                } else {
+                    alert('找不到要修改的合同数据。');
+                }
+            }
+        });
+        
+        // --- Search & Edit Logic ---
+        function populateEditForm(data) {
+            editFormContainer.classList.remove('hidden');
+            document.getElementById('edit-doc-id').value = data.id;
+            
+            document.getElementById('edit-unit-number').value = data.unitNumber || '';
+            document.getElementById('edit-company-name').value = data.companyName || '';
+            document.getElementById('edit-rented-area').value = data.rentedArea || '';
+            document.getElementById('edit-payment-start-day').value = data.paymentStartDay || '';
+            document.getElementById('edit-payment-end-day').value = data.paymentEndDay || '';
+
+            const containers = { rent: 'edit-rent-periods-container', property: 'edit-property-fee-periods-container', free: 'edit-rent-free-periods-container' };
+            Object.values(containers).forEach(id => document.getElementById(id).innerHTML = '');
+            data.rentPeriods?.forEach(p => document.getElementById(containers.rent).appendChild(createPeriodFields('rent', p)));
+            data.propertyFeePeriods?.forEach(p => document.getElementById(containers.property).appendChild(createPeriodFields('property', p)));
+            data.rentFreePeriods?.forEach(p => document.getElementById(containers.free).appendChild(createPeriodFields('free', p)));
+        }
+
+        searchBtn.addEventListener('click', async () => {
+            const companyName = document.getElementById('search-company-name').value.trim();
+            if (!companyName) { alert('请输入公司名称。'); return; }
+            try {
+                const results = await api.get(`/contracts/search?companyName=${encodeURIComponent(companyName)}`);
+                searchResultsContainer.innerHTML = '';
+                if (results.length === 0) { searchResultsContainer.innerHTML = '<p class="text-gray-500">未找到相关记录。</p>'; return; }
+                const resultsList = document.createElement('div');
+                resultsList.className = 'space-y-3';
+                results.forEach(contract => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'p-4 border rounded-md flex justify-between items-center';
+                    resultItem.innerHTML = `<div><p class="font-semibold">${contract.companyName}</p><p class="text-sm text-gray-600">单元号: ${contract.unitNumber}</p></div><button data-contract='${JSON.stringify(contract)}' class="edit-btn inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">修改</button>`;
+                    resultsList.appendChild(resultItem);
+                });
+                searchResultsContainer.appendChild(resultsList);
+            } catch (error) { console.error("Search failed:", error); alert('检索失败。'); }
+        });
+
+        searchResultsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('edit-btn')) {
+                const data = JSON.parse(e.target.dataset.contract);
+                populateEditForm(data);
+            }
+        });
+
+        cancelEditBtn.addEventListener('click', () => editFormContainer.classList.add('hidden'));
+        
+        // --- Export to CSV ---
+        exportBtn.addEventListener('click', () => {
+            const table = document.getElementById('rental-table');
+            if (table.querySelectorAll('tbody tr').length === 0) { alert("表格中没有数据可以导出。"); return; }
+            const escapeCsvCell = (cellHtml) => {
+                const div = document.createElement('div');
+                div.innerHTML = cellHtml.replace(/<br\s*\/?>/gi, ' / ');
+                const text = div.textContent || div.innerText || "";
+                let escapedText = text.replace(/"/g, '""');
+                if (/[",\n]/.test(escapedText)) { escapedText = `"${escapedText}"`; }
+                return escapedText;
+            };
+            let csv = [];
+            const headers = Array.from(table.querySelectorAll('thead th')).slice(0, -1).map(header => `"${header.textContent}"`).join(',');
+            csv.push(headers);
+            table.querySelectorAll('tbody tr').forEach(row => {
+                const rowData = Array.from(row.querySelectorAll('td')).slice(0, -1).map(cell => escapeCsvCell(cell.innerHTML)).join(',');
+                csv.push(rowData);
+            });
+            const csvContent = '\uFEFF' + csv.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "rental_data.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // --- Initial Load & Paste Enhancement ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('rent-periods-container').appendChild(createPeriodFields('rent'));
+            document.getElementById('property-fee-periods-container').appendChild(createPeriodFields('property'));
+            showView('entry');
+
+            function formatDateToYMD(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            document.addEventListener('paste', (e) => {
+                if (e.target.type === 'date') {
+                    e.preventDefault();
+                    const pastedText = (e.clipboardData || window.clipboardData).getData('text').trim();
+                    const date = new Date(pastedText);
+                    if (!isNaN(date.getTime())) {
+                        e.target.value = formatDateToYMD(date);
+                    } else {
+                        console.warn(`Pasted text "${pastedText}" could not be recognized as a valid date.`);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
