@@ -1,16 +1,30 @@
-# 租赁信息管理系统
+租赁信息管理系统
+作者注记：本项目所有代码，从前端界面到后端逻辑，均由 Google Gemini 模型生成，无任何手动添加或修改。这是一个探索 AI 辅助编程潜力的纯粹实验。
 
-这是一个使用 Node.js 和 HTML/CSS/JS 构建的简单桌面应用，用于录入、查询和管理租赁合同信息。
+功能预览 (Feature Preview)
+数据录入页面
+![数据录入页面](C:\Users\DELL.12\Desktop\rental-management-system\rental-backend\screenshots\entry-view.png)
+信息总览页面
+![信息总览页面](C:\Users\DELL.12\Desktop\rental-management-system\rental-backend\screenshots\overview-view.png)
+检索与修改页面
+![信息总览页面](C:\Users\DELL.12\Desktop\rental-management-system\rental-backend\screenshots\search-view.png)
 
-## 功能
-- 录入合同信息，支持多个租金、物业费和免租区间。
-- 在本地文件中永久保存数据 (`database.json`)。
-- 按公司名称模糊搜索合同。
-- 修改和删除已有合同。
-- 将数据导出为 Excel (CSV) 文件。
+主要功能
+多维度录入：支持为一份合同录入多个独立的租金、物业费和免租区间。
 
-## 如何运行
-1.  确保已安装 Node.js。
-2.  在项目文件夹下运行 `npm install` 来安装依赖。
-3.  运行 `node server.js` 来启动后端服务。
-4.  用浏览器打开 `index.html` 文件。
+本地持久化存储：所有数据安全地保存在本地的 database.json 文件中，关闭程序不丢失。
+
+模糊搜索：可按公司名称进行模糊检索，快速定位合同。
+
+完整的修改与删除：提供独立的修改页面，方便更新合同补充协议或更正信息。
+
+数据导出：可将“信息总览”中的所有数据一键导出为 Excel (CSV) 文件。
+
+如何运行
+环境准备: 确保您的电脑上已安装 Node.js。
+
+安装依赖: 在项目文件夹下打开命令行工具，运行 npm install。
+
+启动服务: 继续在命令行中运行 node server.js。
+
+打开界面: 用您的网页浏览器打开项目中的 index.html 文件。
