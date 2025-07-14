@@ -3,11 +3,11 @@
 
 功能预览 (Feature Preview)
 数据录入页面
-![数据录入页面](C:\Users\DELL.12\Desktop\rental-management-system\rental-backend\screenshots\entry-view.png)
+![数据录入页面](screenshots/entry-view.png)
 信息总览页面
-![信息总览页面](C:\Users\DELL.12\Desktop\rental-management-system\rental-backend\screenshots\overview-view.png)
+![信息总览页面](screenshots/overview-view.png)
 检索与修改页面
-![信息总览页面](C:\Users\DELL.12\Desktop\rental-management-system\rental-backend\screenshots\search-view.png)
+![信息总览页面](screenshots/search-view.png)
 
 主要功能
 多维度录入：支持为一份合同录入多个独立的租金、物业费和免租区间。
